@@ -1,9 +1,9 @@
 /**
  * This is the name of the platform that users will use to register the plugin in the Homebridge config.json
  */
-export const PLATFORM_NAME = 'Roomba2 Platform';
+export const PLATFORM_NAME = 'iRobot';
 
 /**
  * This must match the name of your plugin as defined the package.json
  */
-export const PLUGIN_NAME = 'homebridge-roomba2-platform';
+export const PLUGIN_NAME = 'homebridge-irobot';
