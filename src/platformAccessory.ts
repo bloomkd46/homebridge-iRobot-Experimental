@@ -1,13 +1,13 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
-import { iRobot } from './platform';
+import { iRobotPlatform } from './platform';
 
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
  * Each accessory may expose multiple services of different service types.
  */
-export class iRobotRoomba {
+export class iRobotPlatformAccessory {
   private service: Service;
 
   /**
@@ -20,7 +20,7 @@ export class iRobotRoomba {
   };
 
   constructor(
-    private readonly platform: iRobot,
+    private readonly platform: iRobotPlatform,
     private readonly accessory: PlatformAccessory,
   ) {
 
