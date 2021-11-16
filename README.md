@@ -39,21 +39,15 @@ Homebridge plugin to integrate iRobot roombas into HomeKit
 
 ### Help/About
 
-- [Common Errors](https://github.com/bwp91/homebridge-meross/wiki/Common-Errors)
-- [Support Request](https://github.com/bwp91/homebridge-meross/issues/new/choose)
-- [Changelog](https://github.com/bwp91/homebridge-meross/blob/latest/CHANGELOG.md)
-- [About Me](https://github.com/sponsors/bwp91)
+- [Common Errors](../../wiki/Common-Errors)
+- [Support Request](../../issues/new/choose)
+- [Changelog](/CHANGELOG.md)
 
 ### Credits
 
-- This is a fork of the work originally done by [@Robdel12](https://github.com/Robdel12) and [@dylanfrankcom](https://github.com/dylanfrankcom).
-- To [@donavanbecker](https://github.com/donavanbecker) the previous maintainer of this plugin.
-- To [@Apollon77](https://github.com/Apollon77) and [@colthreepv](https://github.com/colthreepv) for the [meross-cloud](https://github.com/Apollon77/meross-cloud) library (contained in this plugin).
-- To the creator of the awesome plugin header logo: [Keryan Belahcene](https://www.instagram.com/keryan.me).
-- To the creators/contributors of [Fakegato](https://github.com/simont77/fakegato-history): [@simont77](https://github.com/simont77) and [@NorthernMan54](https://github.com/NorthernMan54).
 - To the creators/contributors of [Homebridge](https://homebridge.io) who make this plugin possible.
 
 ### Disclaimer
 
-- I am in no way affiliated with Meross and this plugin is a personal project that I maintain in my free time.
+- I am in no way affiliated with iRobot and this plugin is a personal project that I maintain in my free time.
 - Use this plugin entirely at your own risk - please see licence for more information.
