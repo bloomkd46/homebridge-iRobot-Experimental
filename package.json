@@ -31,7 +31,8 @@
     "vacuum"
   ],
   "dependencies": {
-    "dorita980": "^3.1.10"
+    "dorita980": "^3.1.10",
+    "@homebridge/plugin-ui-utils": "^0.0.19"
   },
   "devDependencies": {
     "@types/node": "^16.10.9",
