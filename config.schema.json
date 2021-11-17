@@ -2,6 +2,7 @@
   "pluginAlias": "Homebridge iRobot Platform",
   "pluginType": "platform",
   "singular": true,
+  "customUi": true,
   "schema": {
     "type": "object",
     "properties": {
@@ -11,6 +12,12 @@
         "required": true,
         "default": "Example Dynamic Platform"
       }
+    },
+    "roombas": {
+      "type": "array",
+      "title": "Roomba's",
+      "description": "Advanced settings for you Roomba's",
+      "items": {}
     }
   }
 }
