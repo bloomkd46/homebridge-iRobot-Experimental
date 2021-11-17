@@ -45,6 +45,7 @@ Homebridge plugin to integrate iRobot roombas into HomeKit
 
 ### Credits
 
+- To [Homebridge-Roomba2](https://github.com/karlvr/homebridge-roomba2) who inspired me to start this plugin.
 - To the creators/contributors of [Homebridge](https://homebridge.io) who make this plugin possible.
 
 ### Disclaimer
