@@ -1,7 +1,7 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
 import { iRobotPlatform } from './platform';
-import * as dorita980 from 'dorita980';
+//import * as dorita980 from 'dorita980';
 
 /**
  * Platform Accessory
