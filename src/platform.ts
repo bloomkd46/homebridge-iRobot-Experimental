@@ -2,6 +2,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { iRobotPlatformAccessory } from './platformAccessory';
+import * as dorita980 from 'dorita980';
 
 /**
  * HomebridgePlatform
