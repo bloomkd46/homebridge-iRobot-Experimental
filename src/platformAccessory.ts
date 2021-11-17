@@ -10,7 +10,6 @@ import * as dorita980 from 'dorita980';
  */
 export class iRobotPlatformAccessory {
   private service: Service;
-
   /**
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
@@ -23,6 +22,7 @@ export class iRobotPlatformAccessory {
   constructor(
     private readonly platform: iRobotPlatform,
     private readonly accessory: PlatformAccessory,
+    private readonly log: iRobotPlatform.log,  
   ) {
 
     // set accessory information
