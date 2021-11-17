@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: Lint the project
-        run: npm run lint --fix
+        run: npm run lint
 
       - name: Build the project
         run: npm run build
