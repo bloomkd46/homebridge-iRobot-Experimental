@@ -68,7 +68,7 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
 
       if (existingAccessory) {
         // the accessory already exists
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.robotname);
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
         // existingAccessory.context.device = device;
