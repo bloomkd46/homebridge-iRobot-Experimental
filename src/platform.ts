@@ -51,21 +51,11 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
    */
   discoverDevices() {
     var devices = dorita980.discover((err, obj)=> {
-      if (err) throw err; else return obj;
+      if (err) throw err; else return JSON.parse("["+obj+"]");
     });
     // EXAMPLE ONLY
     // A real plugin you would discover accessories from the local network, cloud services
     // or a user-defined array in the platform config.
-    const exampleDevices = [
-      {
-        exampleUniqueId: 'ABCD',
-        exampleDisplayName: 'Bedroom',
-      },
-      {
-        exampleUniqueId: 'EFGH',
-        exampleDisplayName: 'Kitchen',
-      },
-    ];
 
     // loop over the discovered devices and register each one if it has not already been registered
     for (const device of devices) {
