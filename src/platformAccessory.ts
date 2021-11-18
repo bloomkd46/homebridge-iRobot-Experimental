@@ -22,7 +22,6 @@ export class iRobotPlatformAccessory {
   constructor(
     private readonly platform: iRobotPlatform,
     private readonly accessory: PlatformAccessory,
-    private readonly log: iRobotPlatform["log"],  
   ) {
 
     // set accessory information
