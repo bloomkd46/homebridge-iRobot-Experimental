@@ -50,8 +50,12 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices() {
-    var devices = dorita980.discover((err, obj)=> {
-      if (err) throw err; else return JSON.parse("["+obj+"]");
+    const devices = dorita980.discover((err, obj)=> {
+      if (err){
+        throw err;
+      } else {
+        return JSON.parse('['+obj+']');
+      }
     });
 
     // loop over the discovered devices and register each one if it has not already been registered
