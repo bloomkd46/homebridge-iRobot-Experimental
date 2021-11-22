@@ -54,7 +54,10 @@ export class iRobotPlatformAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.TargetAirPurifierState)
       .onSet(this.setTarget.bind(this))
       .onGet(this.getTarget.bind(this));
-
+    /*this.service.getCharacterisitic(this.platform.Characterisitic.RotationSpeed)
+      .onSet(this.setPower.bind(this))
+      .onGet(this.getPower.bind(this));
+      */
     /**
      * Creating multiple services of the same type.
      *
