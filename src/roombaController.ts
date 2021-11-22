@@ -28,7 +28,7 @@ export class roombaController {
       return roomba;
     }
   }
-  async getState() {
+   getState() {
     this.connect();
     return roomba
       .getRobotState([
@@ -54,8 +54,8 @@ export class roombaController {
   }
 
   getCarpetBoost() {
-    let carpetBoost = await this.getState().carpetBoost
-    let vacHigh = await this.getState().vacHigh
+    let carpetBoost =  this.getState().carpetBoost
+    let vacHigh =  this.getState().vacHigh
     if (carpetBoost && !vacHigh) {
       return 'Auto';
     } else if (!carpetBoost && vacHigh) {
@@ -65,8 +65,8 @@ export class roombaController {
     }
   }
   getCleaningPasses() {
-    let noAutoPasses = await this.getState().noAutoPasses
-    let twoPass = await this.getState().twoPass
+    let noAutoPasses =  this.getState().noAutoPasses
+    let twoPass =  this.getState().twoPass
     if (!noAutoPasses && !twoPass) {
       return 'Auto'
     } else if (noAutoPasses && twoPass) {
@@ -77,20 +77,20 @@ export class roombaController {
   }
 
   start(room?) {
-    await this.connect();
+     this.connect();
     if (room !== null) {
-      await roomba.cleanRoom(room);
+       roomba.cleanRoom(room);
     } else {
-      await roomba.start();
+       roomba.start();
     }
     if (!keepAlive) roomba.end();
   }
 
   stop(dock?: boolean) {
-    await this.connect();
-    await roomba.pause();
+     this.connect();
+     roomba.pause();
     if (dock === true) {
-      await roomba.dock();
+       roomba.dock();
     }
     if (!keepAlive) roomba.end();
   }
