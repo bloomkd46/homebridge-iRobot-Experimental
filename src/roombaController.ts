@@ -28,7 +28,7 @@ export class roombaController {
       return roomba;
     }
   }
-  async getState(): Promise<JSON> {
+  async getState() {
     this.connect();
     return roomba
       .getRobotState([
