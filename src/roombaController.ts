@@ -31,7 +31,9 @@ export class roombaController {
   getState(){
     this.connect();
     return roomba
-      .getRobotState(['batPct', 'mac', 'bin', 'softwareVer', 'lastCommand', 'name', 'cleanMissionStatus', 'carpetBoost', 'vacHigh', 'noAutoPasses', 'twoPass'])
+      .getRobotState(
+        ['batPct', 'mac', 'bin', 'softwareVer', 'lastCommand', 'name', 'cleanMissionStatus', 'carpetBoost', 'vacHigh', 'noAutoPasses', 'twoPass']
+        )
       .then((state) => {
         if(!keepAlive) roomba.end();
         return state;
