@@ -28,7 +28,7 @@ export class roombaController {
       return roomba;
     }
   }
-  getState() {
+  async getState(): Promise<JSON> {
     this.connect();
     return roomba
       .getRobotState([
@@ -45,7 +45,7 @@ export class roombaController {
         'twoPass'
       ]).then((state) => {
         if (!keepAlive) roomba.end();
-        return state;
+        return JSON.parse(state);
       });
   }
 
