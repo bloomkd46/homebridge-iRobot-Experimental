@@ -18,13 +18,13 @@ export class roombaController {
   connect() {
     if (keepAlive) {
       if (roomba === null) {
-        roomba = new dorita980.Local(blid, password, host);
+        roomba = new dorita980.Local(this.blid, this.password, this.host);
         return roomba;
       } else {
         return roomba;
       }
     } else {
-      roomba = new dorita980.Local(blid, password, host);
+      roomba = new dorita980.Local(this.blid, this.password, this.host);
       return roomba;
     }
   }
