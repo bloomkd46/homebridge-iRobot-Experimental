@@ -2,7 +2,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { iRobotPlatformAccessory } from './platformAccessory';
-import * as dorita980 from 'dorita980';
+//import * as dorita980 from 'dorita980';
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
@@ -50,17 +50,21 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices() {
-    const devices = dorita980.discover((err, obj)=> {
+    /*const devices = dorita980.discover((err, obj)=> {
       if (err){
         throw err;
       } else {
         return JSON.parse('['+obj+']');
       }
     });
+    */
+    const devices = this.config.roombas;
 
     // loop over the discovered devices and register each one if it has not already been registered
     for (const device of devices) {
-
+      if(!device.blid || !device.password || !device.ip) {
+        break;
+      }
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address

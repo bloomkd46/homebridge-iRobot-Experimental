@@ -1,6 +1,6 @@
 import dorita980 from 'dorita980';
 import { Logger } from 'homebridge';
-let roomba;
+let roomba = dorita980();
 
 export class roombaController {
   constructor(
@@ -16,9 +16,25 @@ export class roombaController {
 
 
   getState(){
-    return roomba.getRobotState(['batPct', 'mac', 'bin', 'softwareVer', 'lastCommand', 'name', 'cleanMissionStatus']).then((state) => {
-      return state;
-    });
+    return roomba
+      .getRobotState(['batPct', 'mac', 'bin', 'softwareVer', 'lastCommand', 'name', 'cleanMissionStatus', 'carpetBoost', 'vacHigh'])
+      .then((state) => {
+        return state;
+      });
+  }
+
+  getRunningState(){
+    return this.getState().cleanMissionStatus.cycle;
+  }
+
+  getCarpetBoost(){
+    if (this.getState().carpetBoost && !this.getState().vacHigh){
+      return 'Auto';
+    } else if (!this.getState().carpetBoost && this.getState().vacHigh){
+      return 'Performance';
+    } else if (!this.getState().carpetBoost && !this.getState().vacHigh){
+      return 'Eco';
+    }
   }
 
   start(room?){
@@ -27,6 +43,7 @@ export class roombaController {
     }else {
       roomba.start();
     }
+    roomba.end();
   }
 
   stop(dock?: boolean){
@@ -34,5 +51,10 @@ export class roombaController {
     if (dock === true){
       roomba.dock();
     }
+    roomba.end();
+  }
+
+  identify(){
+    roomba.find();
   }
 }

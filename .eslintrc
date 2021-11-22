@@ -10,7 +10,9 @@
     "sourceType": "module"
   },
   "ignorePatterns": [
-    "dist"
+    "dist",
+    "bin",
+    "homebridge-ui"
   ],
   "rules": {
     "quotes": ["warn", "single"],

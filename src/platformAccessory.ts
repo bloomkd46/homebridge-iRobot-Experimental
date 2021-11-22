@@ -3,8 +3,7 @@ import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { iRobotPlatform } from './platform';
 import { roombaController } from './roombaController';
 let roomba = new roombaController();
-//import * as dorita980 from 'dorita980';
-
+let roombaActive, roombaMode, roombaTarget;
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -16,10 +15,6 @@ export class iRobotPlatformAccessory {
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
    */
-  private exampleStates = {
-    On: false,
-    Brightness: 100,
-  };
 
   constructor(
     private readonly platform: iRobotPlatform,
@@ -36,23 +31,29 @@ export class iRobotPlatformAccessory {
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'iRobot')
       .setCharacteristic(this.platform.Characteristic.Model, 'Default-Model')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, 'Default-Serial')
-      .setCharacteristic(this.platform.Characteristic.Version, roomba.getState().softwareVer);
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, roomba.getState().softwareVer);
 
-    // get the LightBulb service if it exists, otherwise create a new LightBulb service
+    // get the purifier service if it exists, otherwise create a new purifier service
     // you can create multiple services for each accessory
-    this.service = this.accessory.getService(this.platform.Service.Switch) || this.accessory.addService(this.platform.Service.Switch);
+    // eslint-disable-next-line max-len
+    this.service = this.accessory.getService(this.platform.Service.AirPurifier) || this.accessory.addService(this.platform.Service.AirPurifier);
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
     this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.displayName);
 
     // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
-
-    // register handlers for the On/Off Characteristic
-    this.service.getCharacteristic(this.platform.Characteristic.On)
-      .onSet(this.setOn.bind(this))                // SET - bind to the `setOn` method below
-      .onGet(this.getOn.bind(this));               // GET - bind to the `getOn` method below
+    // register handlers for the On/Off Characteristics
+    this.service.getCharacteristic(this.platform.Characteristic.Identify)
+      .onSet(this.identify.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.CurrentAirPurifierState)
+      .onGet(this.getMode.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.Active)
+      .onSet(this.setActive.bind(this))
+      .onGet(this.getActive.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.TargetAirPurifierState)
+      .onSet(this.setTarget.bind(this))
+      .onGet(this.getTarget.bind(this));
 
     /**
      * Creating multiple services of the same type.
@@ -66,8 +67,8 @@ export class iRobotPlatformAccessory {
      */
 
     // Example: add two "motion sensor" services to the accessory
-    const motionSensorOneService = this.accessory.getService('Motion Sensor One Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
+    const binFullService = this.accessory.getService('Motion Sensor One Name') ||
+      this.accessory.addService(this.platform.Service.FilterMaintenance, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
 
     const motionSensorTwoService = this.accessory.getService('Motion Sensor Two Name') ||
       this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor Two Name', 'YourUniqueIdentifier-2');
@@ -81,18 +82,9 @@ export class iRobotPlatformAccessory {
      * the `updateCharacteristic` method.
      *
      */
-    let motionDetected = false;
     setInterval(() => {
-      // EXAMPLE - inverse the trigger
-      motionDetected = !motionDetected;
-
-      // push the new value to HomeKit
-      motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-      motionSensorTwoService.updateCharacteristic(this.platform.Characteristic.MotionDetected, !motionDetected);
-
-      this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
-      this.platform.log.debug('Triggering motionSensorTwoService:', !motionDetected);
-    }, 10000);
+      this.updateRoomba();
+    }, this.accessory.context.device.refreshInterval || 1*6000);
   }
 
 
@@ -100,13 +92,22 @@ export class iRobotPlatformAccessory {
    * Handle "SET" requests from HomeKit
    * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
    */
-  async setOn(value: CharacteristicValue) {
-    if (value === true){
+  async identify() {
+    roomba.identify();
+  }
+
+  async setActive(value: CharacteristicValue) {
+    if (value === this.platform.Characteristic.Active.ACTIVE) {
       roomba.start();
     } else {
-      roomba.stop(this.accessory.context.device.dockOnStop);
+      roomba.stop(this.accessory.context.device.dockOnStop || true);
     }
     this.platform.log.debug('Set roomba to ->', value);
+    this.updateRoomba();
+  }
+
+  async setTarget(value: CharacteristicValue) {
+    this.platform.log.warn('Setting targetState to: '+ value+' Support coming soon!');
   }
 
   /**
@@ -122,15 +123,98 @@ export class iRobotPlatformAccessory {
    * @example
    * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
    */
-  async getOn(): Promise<CharacteristicValue> {
-    // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
+  async getActive(): Promise<CharacteristicValue> {
+    this.updateRoomba('Active');
+    this.platform.log.debug('Updating Roomba State To ->', roombaActive);
+    return this.platform.Characteristic.Active[roombaActive];
+  }
 
-    this.platform.log.debug('Get Characteristic On ->', isOn);
+  async getMode(): Promise<CharacteristicValue> {
+    this.updateRoomba('Mode');
+    this.platform.log.debug('Updating Roomba Mode To ->', roombaMode);
+    return this.platform.Characteristic.CurrentAirPurifierState[roombaMode];
+  }
 
-    // if you need to return an error to show the device as "Not Responding" in the Home app:
-    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+  async getTarget(): Promise<CharacteristicValue> {
+    this.updateRoomba('Target');
+    this.platform.log.debug('Updating Roomba Carpet Boost To ->', roombaTarget);
+    return this.platform.Characteristic.TargetAirPurifierState[roombaTarget];
+  }
 
-    return isOn;
+  async updateRoomba(characteristic?: 'Active' | 'Mode' | 'Target') {
+    let status;
+    switch (characteristic) {
+      case 'Active':
+        switch (roomba.getRunningState()) {
+          case 'none':
+            status = 'INACTIVE';
+            break;
+          default:
+            status = 'ACTIVE';
+            throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+          // if you need to return an error to show the device as "Not Responding" in the Home app:
+          // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        }
+        this.platform.log.debug('Updating Roomba State To ->', status);
+        roombaActive = status;
+        this.service.updateCharacteristic(
+          this.platform.Characteristic.CurrentAirPurifierState,
+          this.platform.Characteristic.CurrentAirPurifierState[status],
+        );
+        break;
+      case 'Mode':
+        switch (roomba.getRunningState()) {
+          case 'none':
+            status = 'INACTIVE';
+            break;
+          case 'running':
+            status = 'PURIFYING_AIR';
+            break;
+          /*case 'charging':
+            status = 'IDLE';
+            break;
+          default:
+            status = 'UNKNOWN';
+            throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+          // if you need to return an error to show the device as "Not Responding" in the Home app:
+          // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+          */
+          default:
+            status = 'IDLE';
+            break;
+        }
+        this.platform.log.debug('Updating Roomba Mode To ->', status);
+        roombaMode = status;
+        this.service.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState,
+          this.platform.Characteristic.CurrentAirPurifierState[status],
+        );
+        break;
+      case 'Target':
+        switch (roomba.getCarpetBoost()) {
+          case 'Auto':
+            status = 'AUTO';
+            break;
+          case 'Performance':
+            status = 'MANUAL';
+            break;
+          case 'Eco':
+            status = 'MANUAL';
+            break;
+          default:
+            status = 'AUTO';
+            //throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        }
+        this.platform.log.debug('Updating Roomba Cleaning Power To ->', status);
+        roombaTarget = status;
+        this.service.updateCharacteristic(this.platform.Characteristic.TargetAirPurifierState,
+          this.platform.Characteristic.TargetAirPurifierState[status],
+        );
+        break;
+      default:
+        this.updateRoomba('Active');
+        this.updateRoomba('Mode');
+        this.updateRoomba('Target');
+    }
+
   }
 }

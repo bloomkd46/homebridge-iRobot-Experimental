@@ -21,6 +21,8 @@
     "src/"
   ],
   "exclude": [
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "bin/",
+    "homebridge-ui/"
   ]
 }
