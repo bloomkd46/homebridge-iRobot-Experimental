@@ -1,8 +1,9 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
 import { iRobotPlatform } from './platform';
-import { roombaController } from './roombaController';
+import { roombaController, cacher } from './roombaController';
 let roomba = new roombaController();
+const cache = new cacher([Active, Mode, Target, BinFull, Battery, Charging]);
 let roombaActive, roombaMode, roombaTarget, roombaBinfull, roombaBattery, roombaCharging;
 /**
  * Platform Accessory
@@ -132,6 +133,7 @@ export class iRobotPlatformAccessory {
     this.updateRoomba('Active');
     this.platform.log.debug('Updating Roomba State To ->', roombaActive);
     return this.platform.Characteristic.Active[roombaActive];
+    //return cache.get('Active');
   }
 
   async getMode(): Promise<CharacteristicValue> {
@@ -219,6 +221,7 @@ export class iRobotPlatformAccessory {
             //throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
         }
         this.platform.log.debug('Updating Roomba Cleaning Power To ->', status);
+
         roombaTarget = status;
         this.service.updateCharacteristic(this.platform.Characteristic.TargetAirPurifierState,
           this.platform.Characteristic.TargetAirPurifierState[status],

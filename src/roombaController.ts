@@ -101,14 +101,17 @@ export class roombaController {
     if (!keepAlive) roomba.end();
   }
 }
-export class cache {
-  constructor(cache?) {
-    cache = cache || {};
+export class cacher {
+  constructor(cacheLabels?: Array) {
+    cacheLabels.forEach(element => {
+      set(element);
+    });
+    cache = {};
   }
   get(key: String) {
     return this.cache[key];
   }
-  set(key: String, value: String) {
+  set(key: String, value?: String) {
     this.cache[key] = value;
   }
   dump(){
