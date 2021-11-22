@@ -67,12 +67,12 @@ export class iRobotPlatformAccessory {
      */
 
     // Example: add two "motion sensor" services to the accessory
-    const binFullService = this.accessory.getService('Motion Sensor One Name') ||
+    /*const binFullService = this.accessory.getService('Motion Sensor One Name') ||
       this.accessory.addService(this.platform.Service.FilterMaintenance, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
-
-    const motionSensorTwoService = this.accessory.getService('Motion Sensor Two Name') ||
+*/
+    /*const motionSensorTwoService = this.accessory.getService('Motion Sensor Two Name') ||
       this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor Two Name', 'YourUniqueIdentifier-2');
-
+*/
     /**
      * Updating characteristics values asynchronously.
      *

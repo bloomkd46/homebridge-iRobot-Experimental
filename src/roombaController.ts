@@ -1,6 +1,7 @@
 import dorita980 from 'dorita980';
 import { Logger } from 'homebridge';
-let roomba = dorita980();
+let roomba;
+var keepAlive = false;
 
 export class roombaController {
   constructor(
@@ -10,15 +11,29 @@ export class roombaController {
         public readonly password?: string,
   ){
     if (host !== null && blid !== null && password !== null){
-      roomba = new dorita980.Local(blid, password, host);
+      throw Error('No Host/Blid/Password supplied');
     }
   }
 
-
+  connect(){
+    if(keepAlive){
+      if(roomba === null){
+        roomba = new dorita980.Local(blid, password, host);
+        return roomba;
+      } else {
+        return roomba;
+      }
+    } else {
+      roomba = new dorita980.Local(blid, password, host);
+      return roomba;
+    }
+  }
   getState(){
+    this.connect();
     return roomba
-      .getRobotState(['batPct', 'mac', 'bin', 'softwareVer', 'lastCommand', 'name', 'cleanMissionStatus', 'carpetBoost', 'vacHigh'])
+      .getRobotState(['batPct', 'mac', 'bin', 'softwareVer', 'lastCommand', 'name', 'cleanMissionStatus', 'carpetBoost', 'vacHigh', 'noAutoPasses', 'twoPass'])
       .then((state) => {
+        if(!keepAlive) roomba.end();
         return state;
       });
   }
@@ -28,33 +43,50 @@ export class roombaController {
   }
 
   getCarpetBoost(){
-    if (this.getState().carpetBoost && !this.getState().vacHigh){
+    let carpetBoost = await this.getState().carpetBoost
+    let vacHigh = await this.getState().vacHigh
+    if (carpetBoost && !vacHigh){
       return 'Auto';
-    } else if (!this.getState().carpetBoost && this.getState().vacHigh){
+    } else if (!carpetBoost && vacHigh){
       return 'Performance';
-    } else if (!this.getState().carpetBoost && !this.getState().vacHigh){
+    } else if (!carpetBoost && !vacHigh){
       return 'Eco';
+    }
+  }
+  getCleaningPasses(){
+    let noAutoPasses = await this.getState().noAutoPasses
+    let twoPass = await this.getState().twoPass
+    if (!noAutoPasses && !twoPass){
+      return 'Auto'
+    }else if (noAutoPasses && twoPass){
+      return 'Performance'
+    }else if (noAutoPasses && !twoPass){
+      return 'Eco'
     }
   }
 
   start(room?){
+    await this.connect();
     if (room !== null) {
-      roomba.cleanRoom(room);
+      await roomba.cleanRoom(room);
     }else {
-      roomba.start();
+      await roomba.start();
     }
-    roomba.end();
+    if(!keepAlive) roomba.end();
   }
 
   stop(dock?: boolean){
-    roomba.pause();
+    await this.connect();
+    await roomba.pause();
     if (dock === true){
-      roomba.dock();
+      await roomba.dock();
     }
-    roomba.end();
+    if(!keepAlive) roomba.end();
   }
 
   identify(){
+    this.connect();
     roomba.find();
+    if(!keepAlive) roomba.end();
   }
 }
