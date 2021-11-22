@@ -28,7 +28,7 @@ export class roombaController {
       return roomba;
     }
   }
-   getState() {
+  getState() {
     this.connect();
     return roomba
       .getRobotState([
@@ -54,8 +54,8 @@ export class roombaController {
   }
 
   getCarpetBoost() {
-    let carpetBoost =  this.getState().carpetBoost
-    let vacHigh =  this.getState().vacHigh
+    let carpetBoost = this.getState().carpetBoost
+    let vacHigh = this.getState().vacHigh
     if (carpetBoost && !vacHigh) {
       return 'Auto';
     } else if (!carpetBoost && vacHigh) {
@@ -65,8 +65,8 @@ export class roombaController {
     }
   }
   getCleaningPasses() {
-    let noAutoPasses =  this.getState().noAutoPasses
-    let twoPass =  this.getState().twoPass
+    let noAutoPasses = this.getState().noAutoPasses
+    let twoPass = this.getState().twoPass
     if (!noAutoPasses && !twoPass) {
       return 'Auto'
     } else if (noAutoPasses && twoPass) {
@@ -77,20 +77,20 @@ export class roombaController {
   }
 
   start(room?) {
-     this.connect();
+    this.connect();
     if (room !== null) {
-       roomba.cleanRoom(room);
+      roomba.cleanRoom(room);
     } else {
-       roomba.start();
+      roomba.start();
     }
     if (!keepAlive) roomba.end();
   }
 
   stop(dock?: boolean) {
-     this.connect();
-     roomba.pause();
+    this.connect();
+    roomba.pause();
     if (dock === true) {
-       roomba.dock();
+      roomba.dock();
     }
     if (!keepAlive) roomba.end();
   }
@@ -99,5 +99,22 @@ export class roombaController {
     this.connect();
     roomba.find();
     if (!keepAlive) roomba.end();
+  }
+}
+export class cache {
+  constructor(cache?) {
+    cache = cache || {};
+  }
+  get(key: String) {
+    return this.cache[key];
+  }
+  set(key: String, value: String) {
+    this.cache[key] = value;
+  }
+  dump(){
+    return this.cache;
+  }
+  delete(key: String){
+    this.cache[key] = null;
   }
 }

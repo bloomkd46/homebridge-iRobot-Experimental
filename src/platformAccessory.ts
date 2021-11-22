@@ -3,7 +3,7 @@ import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { iRobotPlatform } from './platform';
 import { roombaController } from './roombaController';
 let roomba = new roombaController();
-let roombaActive, roombaMode, roombaTarget;
+let roombaActive, roombaMode, roombaTarget, roombaBinfull, roombaBattery, roombaCharging;
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -54,6 +54,8 @@ export class iRobotPlatformAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.TargetAirPurifierState)
       .onSet(this.setTarget.bind(this))
       .onGet(this.getTarget.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.FilterChangeIndication)
+      .onGet(this.getBinfull.bind(this));
     /*this.service.getCharacterisitic(this.platform.Characterisitic.RotationSpeed)
       .onSet(this.setPower.bind(this))
       .onGet(this.getPower.bind(this));
@@ -143,6 +145,15 @@ export class iRobotPlatformAccessory {
     this.platform.log.debug('Updating Roomba Carpet Boost To ->', roombaTarget);
     return this.platform.Characteristic.TargetAirPurifierState[roombaTarget];
   }
+
+  async getBinfull(): Promise<CharacteristicValue> {
+    this.updateRoomba('Binfull');
+    this.platform.log.debug('Updating Roomba Bin Full To ->', roombaTarget);
+    return this.platform.Characteristic.TargetAirPurifierState[roombaTarget];
+  }
+
+
+
 
   async updateRoomba(characteristic?: 'Active' | 'Mode' | 'Target') {
     let status;
