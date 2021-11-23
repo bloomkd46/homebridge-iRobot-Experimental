@@ -30,9 +30,11 @@ export class iRobotPlatformAccessory {
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'iRobot')
-      .setCharacteristic(this.platform.Characteristic.Model, 'Default-Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'Default-Serial')
+      //.setCharacteristic(this.platform.Characteristic.Model, roomba.getState().mac)
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, roomba.getState().mac)
       .setCharacteristic(this.platform.Characteristic.FirmwareRevision, roomba.getState().softwareVer);
+    //.setCharacteristic(this.platform.Characteristic.)
+
 
     // get the purifier service if it exists, otherwise create a new purifier service
     // you can create multiple services for each accessory
