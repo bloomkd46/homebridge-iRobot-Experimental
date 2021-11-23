@@ -31,7 +31,7 @@ export class iRobotPlatformAccessory {
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'iRobot')
       //.setCharacteristic(this.platform.Characteristic.Model, roomba.getState().mac)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, roomba.getState().mac)
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, roomba.getState().mac || accessory.context.device.blid)
       .setCharacteristic(this.platform.Characteristic.FirmwareRevision, roomba.getState().softwareVer);
     //.setCharacteristic(this.platform.Characteristic.)
 
