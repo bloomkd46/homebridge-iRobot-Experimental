@@ -137,3 +137,6 @@ dist
 # Ignore Bin
 
 bin
+
+# Ignore Logo
+logo.png
