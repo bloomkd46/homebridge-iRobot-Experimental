@@ -1,5 +1,5 @@
 <p align="center">
- <a href="https://github.com/bloomkd46/homebridge-iRobot"><img alt="Homebridge Verified" src="https://user-images.githubusercontent.com/75853497/143156402-c778b2d3-f2ce-488d-8638-b98d85349cee.png" width="600px"></a>
+ <a href="https://github.com/bloomkd46/homebridge-iRobot"><img alt="Homebridge iRobot" src="https://user-images.githubusercontent.com/75853497/143301930-e2f3bc9a-9f0d-4e03-95f8-c69769712ca5.png" width="600px"></a>
 </p>
 <span align="center">
 
