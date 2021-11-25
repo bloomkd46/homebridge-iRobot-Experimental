@@ -3,7 +3,7 @@ import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { iRobotPlatform } from './platform';
 import { roombaController, cacher } from './roombaController';
 let roomba = new roombaController();
-const cache = new cacher(['Active', 'Mode', 'Target', 'BinFull', 'Battery', 'BatteryCharging', 'BatteryLow']);
+const cache = new cacher(['Active', 'Mode', 'Target', 'BinFull', 'Battery', 'BatteryCharging', 'BatteryLow', 'Power']);
 //let roombaActive, roombaMode, roombaTarget, roombaBinfull, roombaBattery, roombaCharging;
 /**
  * Platform Accessory
@@ -22,7 +22,6 @@ export class iRobotPlatformAccessory {
     private readonly accessory: PlatformAccessory,
   ) {
     roomba = new roombaController(
-      this.platform.log,
       accessory.context.device.host,
       accessory.context.device.blid,
       accessory.context.device.password,
@@ -30,10 +29,14 @@ export class iRobotPlatformAccessory {
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'iRobot')
-      //.setCharacteristic(this.platform.Characteristic.Model, roomba.getState().mac)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, roomba.getState().mac || accessory.context.device.blid)
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, roomba.getState().softwareVer);
-    //.setCharacteristic(this.platform.Characteristic.)
+      .setCharacteristic(this.platform.Characteristic.Model, roomba.getState().mac)
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.blid)
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, roomba.getState().softwareVer)
+      // set the service name, this is what is displayed as the default name on the Home app
+      // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
+      .setCharacteristic(this.platform.Characteristic.Name, accessory.displayName);
+    //.setCharacteristic(this.platform.Characteristic.Identify, true);
+    //.setCharacteristic(this.platform.Characteristic.AppMatchingIdentifier, 'iRobot');
 
 
     // get the purifier service if it exists, otherwise create a new purifier service
@@ -41,9 +44,7 @@ export class iRobotPlatformAccessory {
     // eslint-disable-next-line max-len
     this.service = this.accessory.getService(this.platform.Service.AirPurifier) || this.accessory.addService(this.platform.Service.AirPurifier);
 
-    // set the service name, this is what is displayed as the default name on the Home app
-    // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.displayName);
+
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // register handlers for the On/Off Characteristics
@@ -118,11 +119,17 @@ export class iRobotPlatformAccessory {
       roomba.stop(this.accessory.context.device.dockOnStop || true);
     }
     this.platform.log.debug('Set roomba to ->', value);
-    this.updateRoomba();
+    this.updateRoomba('Active');
   }
 
   async setTarget(value: CharacteristicValue) {
-    this.platform.log.warn('Setting targetState to: ' + value + ' Support coming soon!');
+    if (value === this.platform.Characteristic.TargetAirPurifierState.AUTO) {
+      roomba.setCarpetBoost('Auto');
+    } else {
+      roomba.setCarpetBoost(cache.get('Power') < 50 ? 'Eco' : 'Performance');
+    }
+    this.platform.log.warn('Setting targetState to: ' + value);
+    this.updateRoomba('Target');
   }
 
   /**

@@ -1,126 +1,191 @@
 import dorita980 from 'dorita980';
-import { Logger } from 'homebridge';
 let roomba, cache;
 const keepAlive = false;
 
-export class roombaController{
+export class roombaController {
+
   constructor(
-    public readonly log?: Logger,
     public readonly host?: string,
     public readonly blid?: string,
     public readonly password?: string,
+    public readonly keepAlive?: boolean,
   ) {
     if (host !== null && blid !== null && password !== null) {
       throw Error('No Host/Blid/Password supplied');
     }
+    roomba.connected = false;
   }
-connect() {
-  if (keepAlive) {
-    if (roomba === null) {
+
+
+  connect() {
+    if (keepAlive) {
+      if (roomba === null) {
+        roomba = new dorita980.Local(this.blid, this.password, this.host);
+        return roomba;
+      } else {
+        return roomba;
+      }
+    } else {
       roomba = new dorita980.Local(this.blid, this.password, this.host);
       return roomba;
-    } else {
-      return roomba;
     }
-  } else {
-    roomba = new dorita980.Local(this.blid, this.password, this.host);
-    return roomba;
   }
-}
 
-getState() {
-  this.connect();
-  return roomba
-    .getRobotState([
-      'batPct',
-      'mac',
-      'bin',
-      'softwareVer',
-      'lastCommand',
-      'name',
-      'cleanMissionStatus',
-      'carpetBoost',
-      'vacHigh',
-      'noAutoPasses',
-      'twoPass',
-    ]).then((state) => {
-      if (!keepAlive) {
-        roomba.end();
+  endRoombaIfNeeded() {
+    if (!keepAlive) {
+      roomba.end();
+      roomba.connected = false;
+    }
+  }
+
+  waitForConnection() {
+    if (roomba.connected === false) {
+      this.connect();
+      roomba.on('connect', () => {
+        return;
+      });
+    } else {
+      return;
+    }
+    while (roomba.connected === false) {
+      setInterval(() => {
+        //do nothing
+      }, 100);
+    }
+  }
+
+  getState() {
+    if (roomba.connected === false) {
+      this.connect();
+      roomba.on('connect', () => {
+        roomba.connected = true;
+        return roomba.getRobotState([
+          'batPct',
+          'mac',
+          'bin',
+          'softwareVer',
+          'lastCommand',
+          'name',
+          'cleanMissionStatus',
+          'carpetBoost',
+          'vacHigh',
+          'noAutoPasses',
+          'twoPass',
+        ]).then((state) => {
+          this.endRoombaIfNeeded();
+          return JSON.parse(state);
+        });
+      });
+      while (roomba.connected === false) {
+        setInterval(() => {
+          //do nothing
+        }, 1000);
       }
-      return JSON.parse(state);
-    });
-}
-
-getRunningState() {
-  return this.getState().cleanMissionStatus.cycle;
-}
-
-getCarpetBoost() {
-  const carpetBoost = this.getState().carpetBoost;
-  const vacHigh = this.getState().vacHigh;
-  if (carpetBoost && !vacHigh) {
-    return 'Auto';
-  } else if (!carpetBoost && vacHigh) {
-    return 'Performance';
-  } else if (!carpetBoost && !vacHigh) {
-    return 'Eco';
+    } else {
+      return roomba.getRobotState([
+        'batPct',
+        'mac',
+        'bin',
+        'softwareVer',
+        'lastCommand',
+        'name',
+        'cleanMissionStatus',
+        'carpetBoost',
+        'vacHigh',
+        'noAutoPasses',
+        'twoPass',
+      ]).then((state) => {
+        this.endRoombaIfNeeded();
+        return JSON.parse(state);
+      });
+    }
   }
-}
 
-getCleaningPasses() {
-  const noAutoPasses = this.getState().noAutoPasses;
-  const twoPass = this.getState().twoPass;
-  if (!noAutoPasses && !twoPass) {
-    return 'Auto';
-  } else if (noAutoPasses && twoPass) {
-    return 'Performance';
-  } else if (noAutoPasses && !twoPass) {
-    return 'Eco';
+
+
+
+
+  getRunningState() {
+    return this.getState().cleanMissionStatus.cycle;
   }
-}
 
-getBinfull(){
-  return this.getState().bin.full;
-}
-
-getBatPct(){
-  return this.getState().batPct;
-}
-
-getBatCharging(){
-  return this.getState().cleanMissionStatus.phase === 'charge' ? true : false;
-}
-
-  async start(room ?) {
-  this.connect();
-  if (room !== null) {
-    await roomba.cleanRoom(room);
-  } else {
-    await roomba.start();
+  getCarpetBoost() {
+    const carpetBoost = this.getState().carpetBoost;
+    const vacHigh = this.getState().vacHigh;
+    if (carpetBoost && !vacHigh) {
+      return 'Auto';
+    } else if (!carpetBoost && vacHigh) {
+      return 'Performance';
+    } else if (!carpetBoost && !vacHigh) {
+      return 'Eco';
+    }
   }
-  if (!keepAlive) {
-    roomba.end();
-  }
-}
 
-  async stop(dock ?: boolean) {
-  this.connect();
-  await roomba.pause();
-  if (dock === true) {
-    await roomba.dock();
+  async setCarpetBoost(Mode: 'Auto' | 'Performance' | 'Eco') {
+    this.waitForConnection();
+    switch (Mode) {
+      case 'Auto':
+        roomba.setCarpetBoostAuto();
+        break;
+      case 'Performance':
+        roomba.setCarpetBoostPerformance();
+        break;
+      case 'Eco':
+        roomba.setCarpetBoostEco();
+        break;
+    }
   }
-  if (!keepAlive) {
-    roomba.end();
+
+  getCleaningPasses() {
+    const noAutoPasses = this.getState().noAutoPasses;
+    const twoPass = this.getState().twoPass;
+    if (!noAutoPasses && !twoPass) {
+      return 'Auto';
+    } else if (noAutoPasses && twoPass) {
+      return 'Performance';
+    } else if (noAutoPasses && !twoPass) {
+      return 'Eco';
+    }
   }
-}
+
+  getBinfull() {
+    return this.getState().bin.full;
+  }
+
+  getBatPct() {
+    return this.getState().batPct;
+  }
+
+  getBatCharging() {
+    return this.getState().cleanMissionStatus.phase === 'charge' ? true : false;
+  }
+
+  async start(room?) {
+    this.waitForConnection();
+    if (room !== null) {
+      await roomba.cleanRoom(room);
+    } else {
+      await roomba.start();
+    }
+  }
+
+
+
+
+  async stop(dock?: boolean) {
+    this.waitForConnection();
+    await roomba.pause();
+    if (dock === true) {
+      await roomba.dock();
+    }
+    this.endRoombaIfNeeded();
+  }
 
   async identify() {
-  this.connect();
-  await roomba.find();
-  if (!keepAlive) {
-    roomba.end();
+    this.waitForConnection();
+    await roomba.find();
+    this.endRoombaIfNeeded();
   }
-}
 }
 
 
