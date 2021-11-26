@@ -1,9 +1,9 @@
 import dorita980 from 'dorita980';
-let roomba, cache;
 const keepAlive = false;
 
 export class roombaController {
-
+  private connected = false;
+  public roomba;
   constructor(
     public readonly host?: string,
     public readonly blid?: string,
@@ -13,41 +13,42 @@ export class roombaController {
     if (host !== null && blid !== null && password !== null) {
       throw Error('No Host/Blid/Password supplied');
     }
-    roomba.connected = false;
+    this.connected = false;
   }
 
 
   connect() {
     if (keepAlive) {
-      if (roomba === null) {
-        roomba = new dorita980.Local(this.blid, this.password, this.host);
-        return roomba;
+      if (this.roomba === null) {
+        this.roomba = new dorita980.Local(this.blid, this.password, this.host);
+        return this.roomba;
       } else {
-        return roomba;
+        return this.roomba;
       }
     } else {
-      roomba = new dorita980.Local(this.blid, this.password, this.host);
-      return roomba;
+      this.roomba = new dorita980.Local(this.blid, this.password, this.host);
+      return this.roomba;
     }
   }
 
   endRoombaIfNeeded() {
     if (!keepAlive) {
-      roomba.end();
-      roomba.connected = false;
+      this.roomba.end();
+      this.connected = false;
     }
   }
 
   waitForConnection() {
-    if (roomba.connected === false) {
+    if (this.connected === false) {
       this.connect();
-      roomba.on('connect', () => {
+      this.roomba.on('connect', () => {
+        this.connected = true;
         return;
       });
     } else {
       return;
     }
-    while (roomba.connected === false) {
+    while (this.connected === false) {
       setInterval(() => {
         //do nothing
       }, 100);
@@ -55,50 +56,23 @@ export class roombaController {
   }
 
   getState() {
-    if (roomba.connected === false) {
-      this.connect();
-      roomba.on('connect', () => {
-        roomba.connected = true;
-        return roomba.getRobotState([
-          'batPct',
-          'mac',
-          'bin',
-          'softwareVer',
-          'lastCommand',
-          'name',
-          'cleanMissionStatus',
-          'carpetBoost',
-          'vacHigh',
-          'noAutoPasses',
-          'twoPass',
-        ]).then((state) => {
-          this.endRoombaIfNeeded();
-          return JSON.parse(state);
-        });
-      });
-      while (roomba.connected === false) {
-        setInterval(() => {
-          //do nothing
-        }, 1000);
-      }
-    } else {
-      return roomba.getRobotState([
-        'batPct',
-        'mac',
-        'bin',
-        'softwareVer',
-        'lastCommand',
-        'name',
-        'cleanMissionStatus',
-        'carpetBoost',
-        'vacHigh',
-        'noAutoPasses',
-        'twoPass',
-      ]).then((state) => {
-        this.endRoombaIfNeeded();
-        return JSON.parse(state);
-      });
-    }
+    this.waitForConnection();
+    return this.roomba.getRobotState([
+      'batPct',
+      'mac',
+      'bin',
+      'softwareVer',
+      'lastCommand',
+      'name',
+      'cleanMissionStatus',
+      'carpetBoost',
+      'vacHigh',
+      'noAutoPasses',
+      'twoPass',
+    ]).then((state) => {
+      this.endRoombaIfNeeded();
+      return JSON.parse(state);
+    });
   }
 
 
@@ -125,13 +99,13 @@ export class roombaController {
     this.waitForConnection();
     switch (Mode) {
       case 'Auto':
-        roomba.setCarpetBoostAuto();
+        this.roomba.setCarpetBoostAuto();
         break;
       case 'Performance':
-        roomba.setCarpetBoostPerformance();
+        this.roomba.setCarpetBoostPerformance();
         break;
       case 'Eco':
-        roomba.setCarpetBoostEco();
+        this.roomba.setCarpetBoostEco();
         break;
     }
   }
@@ -160,12 +134,31 @@ export class roombaController {
     return this.getState().cleanMissionStatus.phase === 'charge' ? true : false;
   }
 
+  getRobotIp(Blid){
+    dorita980.getRobotIp((err, ip) => {
+      if (err) {
+        throw Error(err);
+      }
+      const ipArray = ip.split(',');
+      ipArray.forEach(ip => {
+        dorita980.getRobotPublicInfo(ip, (err, info) => {
+          if (err) {
+            throw Error(err);
+          }
+          if (info.blid === Blid) {
+            return ip;
+          }
+        });
+      });
+    });
+  }
+
   async start(room?) {
     this.waitForConnection();
     if (room !== null) {
-      await roomba.cleanRoom(room);
+      await this.roomba.cleanRoom(room);
     } else {
-      await roomba.start();
+      await this.roomba.start();
     }
   }
 
@@ -174,42 +167,36 @@ export class roombaController {
 
   async stop(dock?: boolean) {
     this.waitForConnection();
-    await roomba.pause();
+    await this.roomba.pause();
     if (dock === true) {
-      await roomba.dock();
+      await this.roomba.dock();
     }
     this.endRoombaIfNeeded();
   }
 
   async identify() {
     this.waitForConnection();
-    await roomba.find();
+    await this.roomba.find();
     this.endRoombaIfNeeded();
   }
 }
 
 
 export class cacher {
-
-  constructor(cacheLabels?) {
-    cacheLabels.forEach(element => {
-      this.set(element, 0);
-    });
-  }
-
+  public cache = {};
   get(key: string) {
-    return cache[key] || 0;
+    return this.cache[key] || 0;
   }
 
   set(key: string, value?) {
-    cache[key] = value;
+    this.cache[key] = value;
   }
 
   dump() {
-    return cache;
+    return JSON.stringify(this.cache, null, 2);
   }
 
   delete(key: string) {
-    delete cache[key];
+    delete this.cache[key];
   }
 }

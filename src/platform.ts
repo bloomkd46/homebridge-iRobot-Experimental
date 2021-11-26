@@ -2,7 +2,8 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { iRobotPlatformAccessory } from './platformAccessory';
-//import * as dorita980 from 'dorita980';
+import { roombaController } from './roombaController';
+const roomba = new roombaController();
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
@@ -58,13 +59,30 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
       }
     });
     */
-    const devices = this.config.roombas;
 
+    /*let devices = [];
+    const discoveredDevices = dorita980.discovery((err, data)=> {
+      if (err) {
+        throw Error(err);
+      } else {
+        return data;
+      }
+    });
+    const configuredDevices = this.config.roombas;
+    configuredDevices.forEach(element => {
+      devices.push(element.find(element => element.name === configuredDevices.robotname));
+    });
+    */
+    const devices = JSON.parse(this.config.roombas);
     // loop over the discovered devices and register each one if it has not already been registered
     for (const device of devices) {
-      if(!device.blid || !device.password || !device.ip) {
+      if(!device.blid || !device.password) {
+        this.log.error('No blid or password found');
         break;
       }
+      device.push({'ip':roomba.getRobotIp(device.blid)});
+      this.log.info('Setting device '+ device.name + '`s ip address to '+ device.ip);
+
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address
@@ -92,10 +110,10 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
         // this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
       } else {
         // the accessory does not yet exist, so we need to create it
-        this.log.info('Adding new accessory:', device.robotname);
+        this.log.info('Adding new accessory:', device.name || device.blid);
 
         // create a new accessory
-        const accessory = new this.api.platformAccessory(device.robotname, uuid);
+        const accessory = new this.api.platformAccessory(device.name || device.blid, uuid);
 
         // store a copy of the device object in the `accessory.context`
         // the `context` property can be used to store any data about the accessory you may need

@@ -2,7 +2,7 @@
   "pluginAlias": "Homebridge iRobot Platform",
   "pluginType": "platform",
   "singular": true,
-  "customUi": true,
+  "customUi": false,
   "schema": {
     "type": "object",
     "properties": {
@@ -17,7 +17,26 @@
       "type": "array",
       "title": "Roomba's",
       "description": "Advanced settings for you Roomba's",
-      "items": {}
+      "items": {
+        "name": {
+          "title": "Robot Name",
+          "type": "string",
+          "required": false,
+          "placeholder": "Name To Display In Homekit"
+        },
+        "blid": {
+          "title": "Blid",
+          "type": "string",
+          "required": true,
+          "placeholder": "Your Roombas Blid/Username"
+        },
+        "password": {
+          "title": "Password",
+          "type": "string",
+          "required": true,
+          "placeholder": "Your Roombas Password"
+        }
+      }
     }
   }
 }

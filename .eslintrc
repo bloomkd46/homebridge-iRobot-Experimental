@@ -11,7 +11,7 @@
   },
   "ignorePatterns": [
     "dist",
-    "bin",
+    "test",
     "homebridge-ui"
   ],
   "rules": {

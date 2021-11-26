@@ -119,9 +119,9 @@ dist
 .yarn/build-state.yml
 .pnp.*
 
-# Ignore Bin
+# Ignore test scripts
 
-bin
+test
 
 # Ignore Logo
 logo.png
