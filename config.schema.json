@@ -1,23 +1,24 @@
 {
-  "pluginAlias": "Homebridge iRobot Platform",
+  "pluginAlias": "iRobot",
   "pluginType": "platform",
   "singular": true,
   "customUi": false,
+  "headerDisplay": "<p align=\"center\"><img width=\"60%\" src=\"https://user-images.githubusercontent.com/75853497/143301930-e2f3bc9a-9f0d-4e03-95f8-c69769712ca5.png\"></p><p align=\"center\">For help and support please visit our <a href=\"https://github.com/bloomkd46/homebridge-iRobot/wiki\">GitHub Wiki</a>. We hope you find this plugin useful!</p>",
   "schema": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
-      }
-    },
-    "roombas": {
-      "type": "array",
-      "title": "Roomba's",
-      "description": "Advanced settings for you Roomba's",
-      "items": {
+    "name": {
+      "title": "Name",
+      "type": "string",
+      "required": false,
+      "default": "iRobot"
+    }
+  },
+  "roombas": {
+    "type": "array",
+    "title": "Roomba's",
+    "description": "settings for you Roomba's",
+    "items": {
+      "type": "object",
+      "properties": {
         "name": {
           "title": "Robot Name",
           "type": "string",
@@ -28,15 +29,37 @@
           "title": "Blid",
           "type": "string",
           "required": true,
-          "placeholder": "Your Roombas Blid/Username"
+          "placeholder": "Your Roomba Blid/Username"
         },
         "password": {
           "title": "Password",
           "type": "string",
           "required": true,
-          "placeholder": "Your Roombas Password"
+          "placeholder": "Your Roomba Password"
         }
       }
     }
-  }
+  },
+  "layout": [
+    "Name",
+    {
+      "key": "roombas",
+      "title": "Roombas",
+      "description": "Configuration opions for your roomba's",
+      "expandable": true,
+      "expanded": true,
+      "add": "Add Device",
+      "type": "array",
+      "items": [
+        {
+          "type": "fieldset",
+          "items": [
+            "roombas[].name",
+            "roombas[].blid",
+            "roombas[].password"
+          ]
+        }
+      ]
+    }
+  ]
 }

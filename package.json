@@ -2,7 +2,7 @@
   "private": true,
   "displayName": "Homebridge iRobot",
   "name": "homebridge-irobot",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A Homebridge Platform For Controling Multiple iRobot Roomba's",
   "license": "Apache-2.0",
   "repository": {

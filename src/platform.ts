@@ -2,8 +2,8 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { iRobotPlatformAccessory } from './platformAccessory';
-import { roombaController } from './roombaController';
-const roomba = new roombaController();
+import { discovery } from './discovery';
+const roomba = new discovery();
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
@@ -21,7 +21,7 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
-    this.log.debug('Finished initializing platform:', this.config.name);
+    this.log.debug('Finished initializing platform: ', this.config.name);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
     // Dynamic Platform plugins should only register new accessories after this event was fired,
@@ -73,16 +73,27 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
       devices.push(element.find(element => element.name === configuredDevices.robotname));
     });
     */
-    const devices = JSON.parse(this.config.roombas);
+    if (this.config.roombas === undefined) {
+      this.log.error('No Roomba`s configured, closing plugin');
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const devices = this.config.roombas;
     // loop over the discovered devices and register each one if it has not already been registered
-    for (const device of devices) {
-      if(!device.blid || !device.password) {
-        this.log.error('No blid or password found');
-        break;
+    devices.forEach((device) => {
+      if (!device.blid || !device.password) {
+        this.log.error('No blid or password configured for roomba ' + device.name);
+        return;
       }
-      device.push({'ip':roomba.getRobotIp(device.blid)});
-      this.log.info('Setting device '+ device.name + '`s ip address to '+ device.ip);
-
+      if (device.ip !== null) {
+        if (device.ip !== roomba.getRobotIp(device.blid)) {
+          this.log.warn('[%s] config ip (%s) dosent match discovered ip (%s)', device.name, device.ip, roomba.getRobotIp(device.blid));
+        }
+        this.log.info('[%s] Using ip from config', device.name);
+      } else {
+        device.push({ 'ip': roomba.getRobotIp(device.blid) });
+        this.log.info('Setting device ' + device.name + '`s ip address to ' + device.ip);
+      }
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address
@@ -126,6 +137,6 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
-    }
+    });
   }
 }

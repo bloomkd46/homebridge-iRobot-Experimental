@@ -10,9 +10,10 @@ export class roombaController {
     public readonly password?: string,
     public readonly keepAlive?: boolean,
   ) {
-    if (host !== null && blid !== null && password !== null) {
+    /*if (host !== null && blid !== null && password !== null) {
       throw Error('No Host/Blid/Password supplied');
     }
+    */
     this.connected = false;
   }
 
@@ -134,24 +135,7 @@ export class roombaController {
     return this.getState().cleanMissionStatus.phase === 'charge' ? true : false;
   }
 
-  getRobotIp(Blid){
-    dorita980.getRobotIp((err, ip) => {
-      if (err) {
-        throw Error(err);
-      }
-      const ipArray = ip.split(',');
-      ipArray.forEach(ip => {
-        dorita980.getRobotPublicInfo(ip, (err, info) => {
-          if (err) {
-            throw Error(err);
-          }
-          if (info.blid === Blid) {
-            return ip;
-          }
-        });
-      });
-    });
-  }
+
 
   async start(room?) {
     this.waitForConnection();

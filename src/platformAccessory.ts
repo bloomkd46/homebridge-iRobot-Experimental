@@ -1,7 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { iRobotPlatform } from './platform';
 import { roombaController, cacher } from './roombaController';
-let roomba = new roombaController();
 const cache = new cacher();
 //let roombaActive, roombaMode, roombaTarget, roombaBinfull, roombaBattery, roombaCharging;
 /**
@@ -17,22 +16,22 @@ export class iRobotPlatformAccessory {
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
    */
+  private roomba = new roombaController(
+    this.accessory.context.device.host,
+    this.accessory.context.device.blid,
+    this.accessory.context.device.password,
+  );
 
   constructor(
     private readonly platform: iRobotPlatform,
     private readonly accessory: PlatformAccessory,
   ) {
-    roomba = new roombaController(
-      accessory.context.device.host,
-      accessory.context.device.blid,
-      accessory.context.device.password,
-    );
-    // set accessory information
+  // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'iRobot')
-      .setCharacteristic(this.platform.Characteristic.Model, this.platform.config.Model || 'Undefined')
+      .setCharacteristic(this.platform.Characteristic.Model, this.platform.config.model || 'Roomba')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.blid || 'Undefined')
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, roomba.getState().softwareVer || 'Undefined')
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.roomba.getState().softwareVer || 'Undefined')
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
       .setCharacteristic(this.platform.Characteristic.Name, accessory.displayName || 'Roomba');
@@ -113,14 +112,14 @@ export class iRobotPlatformAccessory {
    * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
    */
   async identify() {
-    roomba.identify();
+    this.roomba.identify();
   }
 
   async setActive(value: CharacteristicValue) {
     if (value === this.platform.Characteristic.Active.ACTIVE) {
-      roomba.start();
+      this.roomba.start();
     } else {
-      roomba.stop(this.accessory.context.device.dockOnStop || true);
+      this.roomba.stop(this.accessory.context.device.dockOnStop || true);
     }
     this.platform.log.debug('Set roomba to ->', value);
     this.updateRoomba('Active');
@@ -128,9 +127,9 @@ export class iRobotPlatformAccessory {
 
   async setTarget(value: CharacteristicValue) {
     if (value === this.platform.Characteristic.TargetAirPurifierState.AUTO) {
-      roomba.setCarpetBoost('Auto');
+      this.roomba.setCarpetBoost('Auto');
     } else {
-      roomba.setCarpetBoost(cache.get('Power') < 50 ? 'Eco' : 'Performance');
+      this.roomba.setCarpetBoost(cache.get('Power') < 50 ? 'Eco' : 'Performance');
     }
     this.platform.log.debug('Setting targetState to: ' + value);
     this.updateRoomba('Target');
@@ -138,11 +137,11 @@ export class iRobotPlatformAccessory {
 
   async setPower(value: CharacteristicValue) {
     if (value !== 50) {
-      roomba.setCarpetBoost(value < 50 ? 'Eco' : 'Performance');
+      this.roomba.setCarpetBoost(value < 50 ? 'Eco' : 'Performance');
       this.platform.log.debug('Setting Power to: ' + (value < 50 ? 'Eco' : 'Performance'));
       this.updateRoomba('Power');
     } else {
-      roomba.setCarpetBoost('Auto');
+      this.roomba.setCarpetBoost('Auto');
       this.platform.log.debug('Setting Power to: Auto');
       this.updateRoomba('Target');
       this.updateRoomba('Power');
@@ -227,7 +226,7 @@ export class iRobotPlatformAccessory {
     let status;
     switch (characteristic) {
       case 'Active':
-        switch (roomba.getRunningState()) {
+        switch (this.roomba.getRunningState()) {
           case 'none':
             status = 'INACTIVE';
             break;
@@ -245,7 +244,7 @@ export class iRobotPlatformAccessory {
         );
         break;
       case 'Mode':
-        switch (roomba.getRunningState()) {
+        switch (this.roomba.getRunningState()) {
           case 'none':
             status = 'INACTIVE';
             break;
@@ -272,7 +271,7 @@ export class iRobotPlatformAccessory {
         );
         break;
       case 'Target':
-        switch (roomba.getCarpetBoost()) {
+        switch (this.roomba.getCarpetBoost()) {
           case 'Auto':
             status = 'AUTO';
             break;
@@ -294,7 +293,7 @@ export class iRobotPlatformAccessory {
         );
         break;
       case 'Power':
-        switch (roomba.getCarpetBoost()) {
+        switch (this.roomba.getCarpetBoost()) {
           case 'Eco':
             status = 25;
             break;
@@ -313,7 +312,7 @@ export class iRobotPlatformAccessory {
         );
         break;
       case 'Binfull':
-        status = roomba.getBinfull() ? 'CHANGE_FILTER' : 'FILTER_OK';
+        status = this.roomba.getBinfull() ? 'CHANGE_FILTER' : 'FILTER_OK';
         /*if (roomba.getBinfull()){
           status = true;
         } else{
@@ -328,7 +327,7 @@ export class iRobotPlatformAccessory {
         );
         break;
       case 'BatteryPct':
-        status = roomba.getBatPct();
+        status = this.roomba.getBatPct();
         this.platform.log.debug('Updating Roomba Battery To ->%%', status);
 
         cache.set('BatteryPct', status);
@@ -337,7 +336,7 @@ export class iRobotPlatformAccessory {
         );
         break;
       case 'BatteryCharging':
-        status = roomba.getBatCharging() ? 'CHARGING' : 'NOT_CHARGING';
+        status = this.roomba.getBatCharging() ? 'CHARGING' : 'NOT_CHARGING';
         this.platform.log.debug('Updating Roomba Battery To ->', status);
 
         cache.set('BatteryCharging', status);
