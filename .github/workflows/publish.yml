@@ -18,6 +18,10 @@ jobs:
         with:
           node-version: '10.x'
           registry-url: 'https://registry.npmjs.org'
+      # Lint the project
+      - uses: ./lint.yml
+      # Build the project
+      - uses: ./build.yml
       - run: npm install
       # Update package.json
       - run: npm version ${{ github.event.release.tag_name }} -m  ${{ github.event.release.name }}
