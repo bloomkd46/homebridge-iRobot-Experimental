@@ -1,4 +1,5 @@
-name: Build
+
+name: Lint
 
 on: [push, pull_request, workflow_call]
 
@@ -22,7 +23,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build the project
-        run: npm run build
-        env:
-          CI: true
+      - name: Lint the project
+        run: npm run lint

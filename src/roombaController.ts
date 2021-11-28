@@ -191,7 +191,7 @@ export class discovery {
 
     server.on('error', (err) => {
       server.close();
-      //cb(err);
+      throw Error(err.toString());
     });
 
     server.on('message', (msg) => {
