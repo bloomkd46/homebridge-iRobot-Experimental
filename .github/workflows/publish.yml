@@ -22,7 +22,7 @@ jobs:
       # Update package.json
       - run: npm version ${{ github.event.release.tag_name }} -m  ${{ github.event.release.name }}
       # Update changelog
-      - run: printf '# ${{ github.event.release.name }} \n## ${{ github.event.release.tag_name }} \n### ${{ github.event.release.body }} \n\n'$(cat ../../CHANGELOG.md)''
+      - run: printf '# ${{ github.event.release.name }} \n## ${{ github.event.release.tag_name }} \n### ${{ github.event.release.body }} \n\n***\n'$(cat ../../CHANGELOG.md)''
       # Publish to npm
       - run: npm publish --access public
         env:
