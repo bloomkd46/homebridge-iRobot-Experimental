@@ -5,7 +5,7 @@ export class discovery {
     const server = dgram.createSocket('udp4');
 
     server.on('error', (err) => {
-      throw Error(err);
+      throw Error(err.toString());
       server.close();
       //cb(err);
     });
