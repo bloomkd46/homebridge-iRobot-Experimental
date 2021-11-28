@@ -2,7 +2,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { iRobotPlatformAccessory } from './platformAccessory';
-import { discovery } from './discovery';
+import { discovery } from './roombaController';
 const roomba = new discovery();
 /**
  * HomebridgePlatform

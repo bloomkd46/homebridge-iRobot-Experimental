@@ -1,4 +1,5 @@
 import dorita980 from 'dorita980';
+import dgram from 'dgram';
 const keepAlive = false;
 
 export class roombaController {
@@ -182,5 +183,43 @@ export class cacher {
 
   delete(key: string) {
     delete this.cache[key];
+  }
+}
+export class discovery {
+  getRobotIp(blid) {
+    const server = dgram.createSocket('udp4');
+
+    server.on('error', (err) => {
+      server.close();
+      //cb(err);
+    });
+
+    server.on('message', (msg) => {
+      try {
+        const parsedMsg = JSON.parse(msg.toString());
+        if (parsedMsg.hostname && parsedMsg.ip &&
+                    ((parsedMsg.hostname.split('-')[0] === 'Roomba') ||
+                        (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
+          if (parsedMsg.hostname.split('-')[1] === blid) {
+            server.close();
+            return parsedMsg.ip;
+            //cb(null, parsedMsg.ip);
+          }
+        }
+      } catch (err) {
+        server.close();
+      }
+    });
+
+    server.on('listening', () => {
+      //do nothing
+    });
+
+    server.bind(5678, () => {
+      const message = Buffer.from('irobotmcs');
+      server.setBroadcast(true);
+      //server.send('hi', 0, 2, 5678, '255.255.255.255');
+      server.send(message, 0, message.length, 5678, '255.255.255.255');
+    });
   }
 }
