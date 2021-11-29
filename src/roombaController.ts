@@ -188,7 +188,6 @@ export class cacher {
 export class discovery {
   getRobotIp(blid, callback) {
     const server = dgram.createSocket('udp4');
-
     server.on('error', (err) => {
       server.close();
       throw Error(err.toString());
