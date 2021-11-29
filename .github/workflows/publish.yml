@@ -22,13 +22,13 @@ jobs:
 
       - name: Lint the project (part 1)
         uses: ./lint.yml
-
-      - name: Lint the project (part 2)
-        run: npm run lint
       
       - name: Build the project (part 1)
         uses: ./build.yml
 
+      - name: Lint the project (part 2)
+        run: npm run lint
+        
       - name: Build the project (part 2)
         run: npm run build
       
