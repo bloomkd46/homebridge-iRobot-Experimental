@@ -222,4 +222,42 @@ export class discovery {
       server.send(message, 0, message.length, 5678, '255.255.255.255');
     });
   }
+
+  getAvailableRobots(){
+    const server = dgram.createSocket('udp4');
+    let robots;
+    server.on('error', (err) => {
+      server.close();
+      throw Error(err.toString());
+    });
+
+    server.on('message', (msg) => {
+      try {
+        const parsedMsg = JSON.parse(msg.toString());
+        if (parsedMsg.hostname && parsedMsg.ip &&
+                    ((parsedMsg.hostname.split('-')[0] === 'Roomba') ||
+                        (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
+          robots.push({
+            'blid': parsedMsg.hostname.split('-')[1],
+            'ip': parsedMsg.ip,
+          });
+        }
+      } catch (err) {
+        server.close();
+      }
+    });
+
+    server.on('listening', () => {
+      setTimeout(() => {
+        return robots;
+      }, 5000);
+    });
+
+    server.bind(5678, () => {
+      const message = Buffer.from('irobotmcs');
+      server.setBroadcast(true);
+      //server.send('hi', 0, 2, 5678, '255.255.255.255');
+      server.send(message, 0, message.length, 5678, '255.255.255.255');
+    });
+  }
 }
