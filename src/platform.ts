@@ -4,6 +4,7 @@ import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { iRobotPlatformAccessory } from './platformAccessory';
 import { discovery } from './roombaController';
 const roomba = new discovery();
+//const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
@@ -39,7 +40,7 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
    * It should be used to setup event handlers for characteristics and update respective values.
    */
   configureAccessory(accessory: PlatformAccessory) {
-    this.log.info('Loading accessory from cache:', accessory.displayName);
+    //this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache so we can track if it has already been registered
     this.accessories.push(accessory);
@@ -80,20 +81,22 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const devices = this.config.roombas;
     // loop over the discovered devices and register each one if it has not already been registered
-    devices.forEach((device) => {
+    for (const device of devices) {
       if (!device.blid || !device.password) {
         this.log.error('No blid or password configured for roomba ' + device.name);
         return;
       }
-      if (device.ip !== null) {
-        if (device.ip !== roomba.getRobotIp(device.blid)) {
-          this.log.warn('[%s] config ip (%s) dosent match discovered ip (%s)', device.name, device.ip, roomba.getRobotIp(device.blid));
+      /*roomba.getRobotIp(device.blid, (ip) => {
+        if (device.ip !== undefined) {
+          if (device.ip !== ip) {
+            this.log.warn('[%s] config ip (%s) dosent match discovered ip (%s)', device.name, device.ip, ip);
+          }
+          this.log.info('[%s] Using ip from config', device.name);
+        } else {
+          this.log.info('Setting device ' + device.name + '`s ip address to ' + device.ip);
         }
-        this.log.info('[%s] Using ip from config', device.name);
-      } else {
-        device.push({ 'ip': roomba.getRobotIp(device.blid) });
-        this.log.info('Setting device ' + device.name + '`s ip address to ' + device.ip);
-      }
+      });
+      */
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address
@@ -105,7 +108,7 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
 
       if (existingAccessory) {
         // the accessory already exists
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName, '@', existingAccessory.context.device.ip);
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
         // existingAccessory.context.device = device;
@@ -113,6 +116,10 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the restored accessory
         // this is imported from `platformAccessory.ts`
+        if(existingAccessory.context.device.ip !== device.ip) {
+          this.log.info('[%s] updating ip address from %s to %s', device.name, existingAccessory.context.device.ip, device.ip);
+          existingAccessory.context.device.ip = device.ip;
+        }
         new iRobotPlatformAccessory(this, existingAccessory);
 
         // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
@@ -121,7 +128,7 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
         // this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
       } else {
         // the accessory does not yet exist, so we need to create it
-        this.log.info('Adding new accessory:', device.name || device.blid);
+        this.log.info('Adding new accessory:', device.name || 'roomba', '@', device.context.device.ip);
 
         // create a new accessory
         const accessory = new this.api.platformAccessory(device.name || device.blid, uuid);
@@ -137,6 +144,6 @@ export class iRobotPlatform implements DynamicPlatformPlugin {
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
-    });
+    }
   }
 }

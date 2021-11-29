@@ -16,11 +16,7 @@ export class iRobotPlatformAccessory {
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
    */
-  private roomba = new roombaController(
-    this.accessory.context.device.host,
-    this.accessory.context.device.blid,
-    this.accessory.context.device.password,
-  );
+
 
   constructor(
     private readonly platform: iRobotPlatform,
@@ -29,9 +25,9 @@ export class iRobotPlatformAccessory {
   // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'iRobot')
-      .setCharacteristic(this.platform.Characteristic.Model, this.platform.config.model || 'Roomba')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.blid || 'Undefined')
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.roomba.getState().softwareVer || 'Undefined')
+      .setCharacteristic(this.platform.Characteristic.Model, /*this.platform.config.model ||*/ 'Roomba')
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, /*accessory.context.device.blid ||*/ 'Undefined')
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, /*this.roomba.getState().softwareVer ||*/ 'Undefined')
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
       .setCharacteristic(this.platform.Characteristic.Name, accessory.displayName || 'Roomba');
@@ -106,6 +102,12 @@ export class iRobotPlatformAccessory {
      */
   }
 
+  private roomba = new roombaController(
+    this.accessory.context.device.ip,
+    this.accessory.context.device.blid,
+    this.accessory.context.device.password,
+  );
+
 
   /**
    * Handle "SET" requests from HomeKit
@@ -163,51 +165,51 @@ export class iRobotPlatformAccessory {
    */
   async getActive(): Promise<CharacteristicValue> {
     this.updateRoomba('Active');
-    this.platform.log.debug('Updating Roomba State To ->', cache.get('Active'));
-    return this.platform.Characteristic.Active[cache.get('Active')];
+    this.platform.log.debug('Updating Roomba State From Cache To ->', cache.get('Active') || 'INACTIVE');
+    return this.platform.Characteristic.Active[cache.get('Active') || 'INACTIVE'];
     //return cache.get('Active');
   }
 
   async getMode(): Promise<CharacteristicValue> {
     this.updateRoomba('Mode');
-    this.platform.log.debug('Updating Roomba Mode To ->', cache.get('Mode'));
-    return this.platform.Characteristic.CurrentAirPurifierState[cache.get('Mode')];
+    this.platform.log.debug('Updating Roomba Mode From Cache To ->', cache.get('Mode') || 'IDLE');
+    return this.platform.Characteristic.CurrentAirPurifierState[cache.get('Mode') || 'IDLE'];
   }
 
   async getTarget(): Promise<CharacteristicValue> {
     this.updateRoomba('Target');
-    this.platform.log.debug('Updating Roomba Carpet Boost To ->', cache.get('Target'));
-    return this.platform.Characteristic.TargetAirPurifierState[cache.get('Target')];
+    this.platform.log.debug('Updating Roomba Carpet Boost From Cache To ->', cache.get('Target') || 'AUTO');
+    return this.platform.Characteristic.TargetAirPurifierState[cache.get('Target') || 'AUTO'];
   }
 
   async getBinfull(): Promise<CharacteristicValue> {
     this.updateRoomba('Binfull');
-    this.platform.log.debug('Updating Roomba Bin Full To ->', cache.get('Binfull'));
-    return this.platform.Characteristic.FilterChangeIndication[cache.get('Binfull')];
+    this.platform.log.debug('Updating Roomba Bin Full From Cache To ->', cache.get('Binfull') || 'FILTER_OK');
+    return this.platform.Characteristic.FilterChangeIndication[cache.get('Binfull') || 'FILTER_OK'];
   }
 
   async getCharging(): Promise<CharacteristicValue> {
     this.updateRoomba('BatteryCharging');
-    this.platform.log.debug('Updating Roomba Charging State To ->', cache.get('BatteryCharging'));
-    return this.platform.Characteristic.ChargingState[cache.get('BatteryCharging')];
+    this.platform.log.debug('Updating Roomba Charging State From Cache To ->', cache.get('BatteryCharging') || 'NOT_CHARGING');
+    return this.platform.Characteristic.ChargingState[cache.get('BatteryCharging') || 'NOT_CHARGING'];
   }
 
   async getBatteryLow(): Promise<CharacteristicValue> {
     this.updateRoomba('BatteryLow');
-    this.platform.log.debug('Updating Roomba Battery State To ->', cache.get('BatteryLow'));
-    return this.platform.Characteristic.StatusLowBattery[cache.get('BatteryLow')];
+    this.platform.log.debug('Updating Roomba Battery State From Cache To ->', cache.get('BatteryLow') || 'BATTERY_LEVEL_NORMAL');
+    return this.platform.Characteristic.StatusLowBattery[cache.get('BatteryLow') || 'BATTERY_LEVEL_NORMAL'];
   }
 
   async getBatteryPct(): Promise<CharacteristicValue> {
     this.updateRoomba('BatteryPct');
-    this.platform.log.debug('Updating Roomba Battery To ->', cache.get('BatteryPct') + '%%');
-    return this.platform.Characteristic.StatusLowBattery[cache.get('BatteryPct')];
+    this.platform.log.debug('Updating Roomba Battery From Cache To ->', cache.get('BatteryPct') || 50 + '%');
+    return this.platform.Characteristic.BatteryLevel[cache.get('BatteryPct') || 50];
   }
 
   async getPower(): Promise<CharacteristicValue> {
     this.updateRoomba('Power');
-    this.platform.log.debug('Updating Roomba Cleaning Power To ->', cache.get('Power') + '%%');
-    return this.platform.Characteristic.RotationSpeed[cache.get('Power')];
+    this.platform.log.debug('Updating Roomba Cleaning Power From Cache To ->', cache.get('Power') || 0 + '%');
+    return this.platform.Characteristic.RotationSpeed[cache.get('Power') || 50];
   }
 
 
@@ -232,7 +234,7 @@ export class iRobotPlatformAccessory {
             break;
           default:
             status = 'ACTIVE';
-            throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+            //throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
           // if you need to return an error to show the device as "Not Responding" in the Home app:
           // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
         }

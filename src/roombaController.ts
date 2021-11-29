@@ -170,7 +170,7 @@ export class roombaController {
 export class cacher {
   public cache = {};
   get(key: string) {
-    return this.cache[key] || 0;
+    return this.cache[key];
   }
 
   set(key: string, value?) {
@@ -186,7 +186,7 @@ export class cacher {
   }
 }
 export class discovery {
-  getRobotIp(blid) {
+  getRobotIp(blid, callback) {
     const server = dgram.createSocket('udp4');
 
     server.on('error', (err) => {
@@ -202,7 +202,9 @@ export class discovery {
                         (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
           if (parsedMsg.hostname.split('-')[1] === blid) {
             server.close();
-            return parsedMsg.ip;
+            // eslint-disable-next-line no-console
+            console.log(parsedMsg);
+            callback(parsedMsg.ip);
             //cb(null, parsedMsg.ip);
           }
         }
@@ -212,13 +214,13 @@ export class discovery {
     });
 
     server.on('listening', () => {
-      //do nothing
+      // eslint-disable-next-line no-console
+      console.log('Looking for robots...');
     });
 
     server.bind(5678, () => {
       const message = Buffer.from('irobotmcs');
       server.setBroadcast(true);
-      //server.send('hi', 0, 2, 5678, '255.255.255.255');
       server.send(message, 0, message.length, 5678, '255.255.255.255');
     });
   }
