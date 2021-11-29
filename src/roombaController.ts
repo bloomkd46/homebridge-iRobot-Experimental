@@ -165,7 +165,7 @@ export class roombaController {
 
 
 export class cacher {
-  public cache = {};
+  public cache: CharacteristicValue;
   get(key: string) {
     return this.cache[key];
   }

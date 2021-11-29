@@ -166,44 +166,44 @@ export class iRobotPlatformAccessory {
   async getActive(): Promise<CharacteristicValue> {
     this.updateRoomba('Active');
     this.platform.log.debug('Updating Roomba State From Cache To ->', cache.get('Active') || 'INACTIVE');
-    return this.platform.Characteristic.Active[cache.get('Active') || 'INACTIVE'];
+    return cache.get('Active') || 0;
     //return cache.get('Active');
   }
 
   async getMode(): Promise<CharacteristicValue> {
     this.updateRoomba('Mode');
     this.platform.log.debug('Updating Roomba Mode From Cache To ->', cache.get('Mode') || 'IDLE');
-    return this.platform.Characteristic.CurrentAirPurifierState[cache.get('Mode') || 'IDLE'];
+    return cache.get('Mode') || 0;
   }
 
   async getTarget(): Promise<CharacteristicValue> {
     this.updateRoomba('Target');
     this.platform.log.debug('Updating Roomba Carpet Boost From Cache To ->', cache.get('Target') || 'AUTO');
-    return this.platform.Characteristic.TargetAirPurifierState[cache.get('Target') || 'AUTO'];
+    return cache.get('Target') || 0;
   }
 
   async getBinfull(): Promise<CharacteristicValue> {
     this.updateRoomba('Binfull');
     this.platform.log.debug('Updating Roomba Bin Full From Cache To ->', cache.get('Binfull') || 'FILTER_OK');
-    return this.platform.Characteristic.FilterChangeIndication[cache.get('Binfull') || 'FILTER_OK'];
+    return cache.get('Binfull') || 0;
   }
 
   async getCharging(): Promise<CharacteristicValue> {
     this.updateRoomba('BatteryCharging');
     this.platform.log.debug('Updating Roomba Charging State From Cache To ->', cache.get('BatteryCharging') || 'NOT_CHARGING');
-    return this.platform.Characteristic.ChargingState[cache.get('BatteryCharging') || 'NOT_CHARGING'];
+    return cache.get('BatteryCharging') || 0;
   }
 
   async getBatteryLow(): Promise<CharacteristicValue> {
     this.updateRoomba('BatteryLow');
     this.platform.log.debug('Updating Roomba Battery State From Cache To ->', cache.get('BatteryLow') || 'BATTERY_LEVEL_NORMAL');
-    return this.platform.Characteristic.StatusLowBattery[cache.get('BatteryLow') || 'BATTERY_LEVEL_NORMAL'];
+    return cache.get('BatteryLow') || 0;
   }
 
   async getBatteryPct(): Promise<CharacteristicValue> {
     this.updateRoomba('BatteryPct');
     this.platform.log.debug('Updating Roomba Battery From Cache To ->', cache.get('BatteryPct') || 50 + '%');
-    return this.platform.Characteristic.BatteryLevel[cache.get('BatteryPct') || 50];
+    return cache.get('BatteryPct') || 50;
   }
 
   async getPower(): Promise<CharacteristicValue> {
@@ -239,7 +239,7 @@ export class iRobotPlatformAccessory {
           // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
         }
         this.platform.log.debug('Updating Roomba State To ->', status);
-        cache.set('Active', status);
+        cache.set('Active', this.platform.Characteristic.CurrentAirPurifierState[status]);
         this.purifierService.updateCharacteristic(
           this.platform.Characteristic.CurrentAirPurifierState,
           this.platform.Characteristic.CurrentAirPurifierState[status],
@@ -267,7 +267,7 @@ export class iRobotPlatformAccessory {
             break;
         }
         this.platform.log.debug('Updating Roomba Mode To ->', status);
-        cache.set('Mode', status);
+        cache.set('Mode', platform.Characteristic.CurrentAirPurifierState[status]);
         this.purifierService.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState,
           this.platform.Characteristic.CurrentAirPurifierState[status],
         );
@@ -289,7 +289,7 @@ export class iRobotPlatformAccessory {
         }
         this.platform.log.debug('Updating Roomba Cleaning Power To ->', status);
 
-        cache.set('Target', status);
+        cache.set('Target', this.platform.Characteristic.TargetAirPurifierState[status]);
         this.purifierService.updateCharacteristic(this.platform.Characteristic.TargetAirPurifierState,
           this.platform.Characteristic.TargetAirPurifierState[status],
         );
@@ -306,7 +306,7 @@ export class iRobotPlatformAccessory {
             status = 50;
             break;
         }
-        this.platform.log.debug('Updating Roomba Cleaning Power To ->', status + '%%');
+        this.platform.log.debug('Updating Roomba Cleaning Power To ->', this.platform.Characteristic.RotationSpeed[status] + '%');
 
         cache.set('Power', status);
         this.purifierService.updateCharacteristic(this.platform.Characteristic.RotationSpeed,
@@ -321,7 +321,7 @@ export class iRobotPlatformAccessory {
           status = false;
         }
         */
-        this.platform.log.debug('Updating Roomba Binfull To ->', status);
+        this.platform.log.debug('Updating Roomba Binfull To ->', this.platform.Characteristic.FilterChangeIndication[status]);
 
         cache.set('Binfull', status);
         this.filterService.updateCharacteristic(this.platform.Characteristic.FilterChangeIndication,
@@ -330,9 +330,9 @@ export class iRobotPlatformAccessory {
         break;
       case 'BatteryPct':
         status = this.roomba.getBatPct();
-        this.platform.log.debug('Updating Roomba Battery To ->%%', status);
+        this.platform.log.debug('Updating Roomba Battery To ->', status, '%');
 
-        cache.set('BatteryPct', status);
+        cache.set('BatteryPct', this.platform.Characteristic.BatteryLevel[status]);
         this.batteryService.updateCharacteristic(this.platform.Characteristic.BatteryLevel,
           this.platform.Characteristic.BatteryLevel[status],
         );
@@ -341,7 +341,7 @@ export class iRobotPlatformAccessory {
         status = this.roomba.getBatCharging() ? 'CHARGING' : 'NOT_CHARGING';
         this.platform.log.debug('Updating Roomba Battery To ->', status);
 
-        cache.set('BatteryCharging', status);
+        cache.set('BatteryCharging', this.platform.Characteristic.ChargingState[status]);
         this.batteryService.updateCharacteristic(this.platform.Characteristic.ChargingState,
           this.platform.Characteristic.ChargingState[status],
         );
@@ -350,7 +350,7 @@ export class iRobotPlatformAccessory {
         status = (cache.get('BatteryPct') < 20) ? 'BATTERY_LEVEL_LOW' : 'BATTERY_LEVEL_NORMAL';
         this.platform.log.debug('Updating Roomba Battery To ->', status);
 
-        cache.set('BatteryLow', status);
+        cache.set('BatteryLow', this.platform.Characteristic.StatusLowBattery[status]);
         this.batteryService.updateCharacteristic(this.platform.Characteristic.StatusLowBattery,
           this.platform.Characteristic.StatusLowBattery[status],
         );
