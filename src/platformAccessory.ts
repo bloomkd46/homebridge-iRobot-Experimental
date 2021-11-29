@@ -2,7 +2,6 @@ import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { iRobotPlatform } from './platform';
 import { roombaController, cacher } from './roombaController';
 const cache = new cacher();
-//let roombaActive, roombaMode, roombaTarget, roombaBinfull, roombaBattery, roombaCharging;
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -106,6 +105,7 @@ export class iRobotPlatformAccessory {
     this.accessory.context.device.ip,
     this.accessory.context.device.blid,
     this.accessory.context.device.password,
+    this.accessory.context.device.keepAlive || false
   );
 
 

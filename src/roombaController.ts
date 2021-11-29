@@ -1,15 +1,15 @@
 import dorita980 from 'dorita980';
 import dgram from 'dgram';
-const keepAlive = false;
+const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 
 export class roombaController {
   private connected = false;
   public roomba;
   constructor(
-    public readonly host?: string,
-    public readonly blid?: string,
-    public readonly password?: string,
-    public readonly keepAlive?: boolean,
+    public readonly host: string,
+    public readonly blid: string,
+    public readonly password: string,
+    public readonly keepAlive: boolean,
   ) {
     /*if (host !== null && blid !== null && password !== null) {
       throw Error('No Host/Blid/Password supplied');
@@ -18,9 +18,8 @@ export class roombaController {
     this.connected = false;
   }
 
-
   connect() {
-    if (keepAlive) {
+    if (this.keepAlive) {
       if (this.roomba === null) {
         this.roomba = new dorita980.Local(this.blid, this.password, this.host);
         return this.roomba;
@@ -34,7 +33,7 @@ export class roombaController {
   }
 
   endRoombaIfNeeded() {
-    if (!keepAlive) {
+    if (!this.keepAlive) {
       this.roomba.end();
       this.connected = false;
     }
@@ -51,9 +50,7 @@ export class roombaController {
       return;
     }
     while (this.connected === false) {
-      setInterval(() => {
-        //do nothing
-      }, 100);
+      sleep(100);
     }
   }
 
