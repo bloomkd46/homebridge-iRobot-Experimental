@@ -13,31 +13,42 @@ jobs:
       packages: write 
     steps:
       - uses: actions/checkout@v2
-      # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v2
+
+      - name: Setup .npmrc file to publish to npm
+        uses: actions/setup-node@v2
         with:
           node-version: '10.x'
           registry-url: 'https://registry.npmjs.org'
-      # Lint the project
-      - uses: ./lint.yml
-      # Build the project
-      - uses: ./build.yml
-      - run: npm install
-      # Update package.json
-      - run: npm version ${{ github.event.release.tag_name }} -m  ${{ github.event.release.name }}
-      # Update changelog
-      - run: printf '# ${{ github.event.release.name }} \n## ${{ github.event.release.tag_name }} \n### ${{ github.event.release.body }} \n\n***\n'$(cat ../../CHANGELOG.md)''
-      # Publish to npm
-      - run: npm publish --access public
+
+      - name: Lint the project (part 1)
+        uses: ./lint.yml
+
+      - name: Lint the project (part 2)
+        run: npm run lint
+      
+      - name: Build the project (part 1)
+        uses: ./build.yml
+
+      - name: Build the project (part 2)
+        run: npm run build
+      
+      - name: Update changelog
+        run: printf '# ${{ github.event.release.name }} \n## ${{ github.event.release.tag_name }} \n ${{ github.event.release.body }} \n\n***\n'$(cat ../../CHANGELOG.md)''
+
+      - name: update package version
+        run: npm version ${{ github.event.release.tag_name }}
+
+      - name: Publish to npm
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # Setup .npmrc file to publish to GitHub Packages
-      - uses: actions/setup-node@v2
+
+      - name: Setup .npmrc file to publish to GitHub Packages
+        uses: actions/setup-node@v2
         with:
           registry-url: 'https://npm.pkg.github.com'
-          # Defaults to the user or organization that owns the workflow file
-          scope: '@bloomkd46'
-      # Publish to GitHub Packages
-      - run: npm publish
+
+      - name: Publish to GitHub Packages
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
