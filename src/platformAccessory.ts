@@ -267,7 +267,7 @@ export class iRobotPlatformAccessory {
             break;
         }
         this.platform.log.debug('Updating Roomba Mode To ->', status);
-        cache.set('Mode', platform.Characteristic.CurrentAirPurifierState[status]);
+        cache.set('Mode', this.platform.Characteristic.CurrentAirPurifierState[status]);
         this.purifierService.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState,
           this.platform.Characteristic.CurrentAirPurifierState[status],
         );

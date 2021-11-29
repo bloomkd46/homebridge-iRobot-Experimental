@@ -1,5 +1,6 @@
 import dorita980 from 'dorita980';
 import dgram from 'dgram';
+import { CharacteristicValue } from 'homebridge';
 const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 
 export class roombaController {
@@ -194,8 +195,8 @@ export class discovery {
       try {
         const parsedMsg = JSON.parse(msg.toString());
         if (parsedMsg.hostname && parsedMsg.ip &&
-                    ((parsedMsg.hostname.split('-')[0] === 'Roomba') ||
-                        (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
+          ((parsedMsg.hostname.split('-')[0] === 'Roomba') ||
+            (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
           if (parsedMsg.hostname.split('-')[1] === blid) {
             server.close();
             // eslint-disable-next-line no-console
@@ -221,7 +222,7 @@ export class discovery {
     });
   }
 
-  getAvailableRobots(){
+  getAvailableRobots() {
     const server = dgram.createSocket('udp4');
     let robots;
     server.on('error', (err) => {
@@ -233,8 +234,8 @@ export class discovery {
       try {
         const parsedMsg = JSON.parse(msg.toString());
         if (parsedMsg.hostname && parsedMsg.ip &&
-                    ((parsedMsg.hostname.split('-')[0] === 'Roomba') ||
-                        (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
+          ((parsedMsg.hostname.split('-')[0] === 'Roomba') ||
+            (parsedMsg.hostname.split('-')[0] === 'iRobot'))) {
           robots.push({
             'blid': parsedMsg.hostname.split('-')[1],
             'ip': parsedMsg.ip,
