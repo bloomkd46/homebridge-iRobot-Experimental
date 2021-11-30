@@ -10,9 +10,24 @@ export interface robotState {
     full: boolean;
   };
   softwareVer: string;
-  lastCommand: unknown;
+  lastCommand: {
+    command: string;
+    time: number;
+    initiator: string;
+  };
   name: string;
-  cleanMissionStatus: unknown;
+  cleanMissionStatus: {
+    cycle: string;
+    phase: string;
+    expireM: number;
+    rechrgM: number;
+    error: number;
+    notReady: number;
+    mssnM: number;
+    sqft: number;
+    initiator: string;
+    nMssn: number;
+  };
   carpetBoost: boolean;
   vacHigh: boolean;
   noAutoPasses: boolean;
