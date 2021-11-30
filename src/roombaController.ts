@@ -86,6 +86,7 @@ export class roombaController {
   }
 
   getState(): robotState {
+    const state;
     this.waitForConnection();
     return this.roomba.getRobotState([
       'batPct',
@@ -99,10 +100,14 @@ export class roombaController {
       'vacHigh',
       'noAutoPasses',
       'twoPass',
-    ]).then((state) => {
+    ]).then((robotState) => {
       this.endRoombaIfNeeded();
-      return JSON.parse(state);
+      state = JSON.parse(robotState);
     });
+    while (state === undefined){
+      sleep(100);
+    }
+    return state;
   }
 
 
