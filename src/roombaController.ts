@@ -1,7 +1,7 @@
 import dorita980 from 'dorita980';
 import dgram from 'dgram';
 import { CharacteristicValue } from 'homebridge';
-const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+//const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 export interface robotState {
   batPct: number;
   mac: string;
@@ -81,12 +81,13 @@ export class roombaController {
       return;
     }
     while (this.connected === false) {
-      sleep(100);
+      //sleep(100);
+      //do nothing
     }
   }
 
   getState(): robotState {
-    const state = null;
+    let state;
     this.waitForConnection();
     return this.roomba.getRobotState([
       'batPct',
@@ -102,10 +103,10 @@ export class roombaController {
       'twoPass',
     ]).then((robotState) => {
       this.endRoombaIfNeeded();
-      const state = JSON.parse(robotState);
+      state = JSON.parse(robotState);
     });
-    while (state === null){
-      sleep(100);
+    while (state === undefined){
+       //do nothing
     }
     return state;
   }
